@@ -1,0 +1,174 @@
+#!/bin/bash
+#
+# https://github.com/DieNacht/autoremove-torrents-installation
+# Author: DieNacht
+#
+# Thanks to amefs and Aniverse
+
+unset LogRootPath LogTimes DebLocation SCLocation LOCKLocation OutputLOG \
+      mode iUser iPass iHome
+
+AppName="AutoRemove-Torrents"
+AppNameLower="autoremove-torrents"
+Need_SourceCode=no
+pm_action=install
+
+function show_usage() { echo "
+$AppName $pm_action $script_version ($script_update)
+Usage:
+      -l        Specifiy LogBase (Not log file)
+      -d        Enable debug mode
+      --log     Show logfile's content"
+exit 1 ; }
+
+OPTS=$(getopt -a -o u:p:l:d --long user:,password:,debug,logbase:,system,single,log -- "$@")
+[ ! $? = 0 ] && show_usage
+eval set -- "$OPTS"
+
+while [ -n "$1" ] ; do case "$1" in
+    -u | --user         ) iUser="$2"    ; shift 2 ;;
+    -p | --password     ) iPass="$2"    ; shift 2 ;;
+    -l | --logbase      ) LogTimes="$2" ; shift 2 ;;
+    -d | --debug        ) debug=1       ; shift   ;;
+         --system       ) mode=system   ; shift   ;;
+         --single       ) mode=single   ; shift   ;;
+         --log          ) show_log=1    ; shift   ;;
+    -- ) shift ; break ;;
+esac ; done
+
+################################################################################################ Set Variables 1
+
+if [[ -f /etc/inexistence/00.Installation/function ]]; then
+    source /etc/inexistence/00.Installation/function
+else
+    source <(wget -qO- https://github.com/Aniverse/inexistence/raw/master/00.Installation/function)
+fi
+
+set_variables_log_location
+check_var_OutputLOG
+debug_log_location
+cat_outputlog
+
+################################################################################################ Set Variables 2
+
+# [[ -z $mode ]] && mode=system
+# [[ -z $iUser || -z $iPass ]] && { echo -e "ERROR: Please specify username and password!" ; exit 1 ; }
+[[ -z $iPass ]] && { echo -e "ERROR: Please input password" ; exit 1 ; }
+id -u $iUser >/dev/null 2>&1 || { echo -e "ERROR: User $iUser doesn't exist" ; exit 1 ; }
+[[ -z $iHome ]] && [[ $iUser == root ]] && iHome=/root
+[[ -z $iHome ]] && [[ $iUser != root ]] && iHome=/home/$iUser
+
+################################################################################################ Sub Functions
+
+function art_config_file() {
+
+    [[ -z $qb_port ]] && qb_port=2017
+    [[ -z $de_port ]] && de_port=58846
+    [[ -z $tr_port ]] && tr_port=9099
+    cat  << EOF > /tmp/autoremove-torrents.conf
+# For more usages, check the offical site: https://autoremove-torrents.readthedocs.io/zh_CN/latest/
+
+# client templates
+# deluge:
+#   client: deluge
+#   host: 127.0.0.1:$de_port
+#   username: $iUser
+#   password: $iPass
+# qbittorrent:
+#   client: qbittorrent
+#   host: http://127.0.0.1:$qb_port
+#   username: $iUser
+#   password: $iPass
+# transmission:
+#   client: transmission
+#   host: http://127.0.0.1:$tr_port
+#   username: $iUser
+#   password: $iPass
+
+Example1:
+  client: deluge
+  host: 127.0.0.1:$de_port                                     # No "http://" or "https://"
+  username: $iUser
+  password: $iPass
+  strategies:
+    delete_by_seedsize:
+      trackers:
+        - tracker.hdsky.me                                     # No "http://" or "https://"
+      seed_size:
+        limit: 3000                                            # Count in GiB
+        action: remove-old-seeds
+    delete_by_seedtime:
+      categories:
+        - hdsky
+      seeding_time: 259200                                     # Count in Second
+  delete_data: true
+
+Example2:
+  client: qbittorrent
+  host: http://127.0.0.1:$qb_port
+  username: $iUser
+  password: $iPass
+  strategies:
+    delete_by_restspace:
+      free_space:
+        min: 100                                               # Count in GiB
+        path: $iHome                                           # This Path MUST EXIST
+        action: remove-old-seeds
+    delete_by_peernumber:
+      status:
+        - Downloading
+      remove: connected_leecher < 2 or seeder > 1
+    delete_by_speed:
+      status:
+        - Downloading
+      remove: download_speed > 20480 and upload_speed < 20480  # Count in KiB per Second
+  delete_data: true
+
+Example3:
+  client: transmission
+  host: http://127.0.0.1:$tr_port
+  username: $iUser
+  password: $iPass
+  strategies:
+    delete_by_crosscheck:
+      status:
+        - Checking
+      remove: progress > 1                                     # Count in Percentage(%)
+  delete_data: false
+EOF
+    cp -f /tmp/autoremove-torrents.conf $iHome/.config/autoremove-torrents/config.yml
+
+}
+
+################################################################################################ Main Function
+
+function configure_art() {
+
+    echo >> $OutputLOG
+
+    if [[ -d $iHome/.config/autoremove-torrents ]]; then
+        mv -f  $iHome/.config/autoremove-torrents $iHome/.config/autoremove-torrents.old.$times >> "$OutputLOG" 2>&1
+        rm -rf $iHome/.config/autoremove-torrents
+    fi
+
+    mkdir -p /$iHome/.config/autoremove-torrents/logs
+    art_config_file
+    art_cmd=/usr/local/bin/autoremove-torrents
+
+    chown $iUser.$iUser -R $iHome/.config/autoremove-torrents/  >> "$OutputLOG" 2>&1
+
+    status_lock=$AppNameLower-c
+    echo "status_lock=$status_lock" > /tmp/Variables
+    rm -f /tmp/$status_lock.1.lock /tmp/$status_lock.2.lock
+    if [[ $($art_cmd -v -c $iHome/.config/autoremove-torrents/config.yml -l /tmp 2>&1 | grep "INFO: Found" | grep -oP "[0-9.]+" | tail -2 | head -1) == 3 ]]; then
+        touch /tmp/$status_lock.1.lock
+    else
+        touch /tmp/$status_lock.2.lock
+    fi
+    echo >> $OutputLOG
+
+}
+
+echo_task "Configuring $AppName ..."
+configure_art & spinner $!
+check_status $status_lock
