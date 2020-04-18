@@ -43,7 +43,7 @@ function install_art() {
 
     pip3 install --upgrade pyopenssl                            >> "$OutputLOG" 2>&1
     pip3 install --upgrade cryptography                         >> "$OutputLOG" 2>&1
-    pip3 install --ignore-installed autoremove-torrents         >> "$OutputLOG" 2>&1
+    pip3 install autoremove-torrents                            >> "$OutputLOG" 2>&1
 
     status_lock=$AppNameLower
     echo "status_lock=$status_lock" > /tmp/Variables
