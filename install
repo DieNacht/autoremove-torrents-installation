@@ -28,10 +28,7 @@ function install_art() {
 
     echo >> $OutputLOG
 
-    if [[ "$CODENAME" == xenial ]]; then
-        apt_install_check    python3.6-psutil
-        apt_install_separate
-    elif [[ "$CODENAME" =~ (bionic|buster) ]]; then
+    if [[ "$CODENAME" =~ (xenial|bionic|buster) ]]; then
         apt_install_check    python3-psutil
         apt_install_separate
     fi
