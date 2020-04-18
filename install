@@ -93,19 +93,19 @@ function install_art() {
     echo >> $OutputLOG
 
     wget -nv -O get-pip.py https://bootstrap.pypa.io/get-pip.py >> "$OutputLOG" 2>&1
-    python3 get-pip.py --force-reinstall              >> "$OutputLOG" 2>&1
-    pip3 install --upgrade pip                        >> "$OutputLOG" 2>&1
-    pip3 install setuptools==45.3.0                   >> "$OutputLOG" 2>&1
+    python3 get-pip.py --force-reinstall                        >> "$OutputLOG" 2>&1
+    pip3 install --upgrade pip                                  >> "$OutputLOG" 2>&1
+    pip3 install setuptools==45.3.0                             >> "$OutputLOG" 2>&1
 
-    pip3 install --upgrade pyopenssl                  >> "$OutputLOG" 2>&1
-    pip3 install --upgrade cryptography               >> "$OutputLOG" 2>&1
-    pip3 install --ignore-installed autoremove-torrents==1.5.2                  >> "$OutputLOG" 2>&1
+    pip3 install --upgrade pyopenssl                            >> "$OutputLOG" 2>&1
+    pip3 install --upgrade cryptography                         >> "$OutputLOG" 2>&1
+    pip3 install --ignore-installed autoremove-torrents         >> "$OutputLOG" 2>&1
 
     status_lock=$AppNameLower
     echo "status_lock=$status_lock" > /tmp/Variables
     rm -f /tmp/$status_lock.1.lock /tmp/$status_lock.2.lock 
     # if [[ -n $(which autoremove-torrents) ]]; then
-    if [[ $(autoremove-torrents -v -l /tmp 2>&1 | head -1 | grep -oP "[0-9.]+" | tail -1) == 1.5.2 ]]; then
+    if version_ge $(autoremove-torrents -v -l /tmp 2>&1 | head -1 | grep -oP "[0-9.]+" | tail -1) 1.5.2 ; then
         touch /tmp/$status_lock.1.lock
     else
         touch /tmp/$status_lock.2.lock
