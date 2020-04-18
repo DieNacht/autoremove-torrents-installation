@@ -151,7 +151,7 @@ function configure_art() {
         rm -rf $iHome/.config/autoremove-torrents
     fi
 
-    mkdir -p /$iHome/.config/autoremove-torrents/logs
+    mkdir -p $iHome/.config/autoremove-torrents/logs
     art_config_file
     art_cmd=/usr/local/bin/autoremove-torrents
 
