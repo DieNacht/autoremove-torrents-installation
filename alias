@@ -79,6 +79,6 @@ EOF
 
 [ -z $(which autoremove-torrents) ] && { echo -e "ERROR: AutoRemove-Torrents is NOT installed" ; exit 1 ; }
 
-echo_task "Setting $AppName alias ..."
+echo_task "Setting $AppName Alias ..."
 alias_art & spinner $!
 status_done
