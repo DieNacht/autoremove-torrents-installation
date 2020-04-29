@@ -73,6 +73,9 @@ EOF
     cp -f /tmp/art-configure /usr/local/bin/art-configure >> "$OutputLOG" 2>&1
     chmod +x /usr/local/bin/art-configure >> "$OutputLOG" 2>&1
 
+    apt_install_check   $editor
+    apt_install_separate
+
     echo >> $OutputLOG
 
 }
