@@ -5,17 +5,75 @@
 #
 # Thanks to amefs and Aniverse
 
-ln -s $(which autoremove-torrents) /usr/local/bin/art
+function show_usage() { echo "
+$AppName $pm_action $script_version ($script_update)
+Usage:
+      -l        Specifiy LogBase (Not log file)
+      -d        Enable debug mode
+      --log     Show logfile's content"
+exit 1 ; }
 
-cat << 'EOF' > /usr/local/bin/art-execute
+OPTS=$(getopt -a -o e:l:d --long editor:,debug,logbase:,system,single,log -- "$@")
+[ ! $? = 0 ] && show_usage
+eval set -- "$OPTS"
+
+while [ -n "$1" ] ; do case "$1" in
+    -e | --editor       ) editor="$2"   ; shift 2 ;;
+    -l | --logbase      ) LogTimes="$2" ; shift 2 ;;
+    -d | --debug        ) debug=1       ; shift   ;;
+         --system       ) mode=system   ; shift   ;;
+         --single       ) mode=single   ; shift   ;;
+         --log          ) show_log=1    ; shift   ;;
+    -- ) shift ; break ;;
+esac ; done
+
+################################################################################################ Set Variables 1
+
+if [[ -f /etc/inexistence/00.Installation/function ]]; then
+    source /etc/inexistence/00.Installation/function
+else
+    source <(wget -qO- https://github.com/Aniverse/inexistence/raw/master/00.Installation/function)
+fi
+
+set_variables_log_location
+check_var_OutputLOG
+debug_log_location
+cat_outputlog
+
+################################################################################################ Set Variables 2
+
+[[ ! $editor =~ (vim|nano)  ]] && { echo -e "ERROR: Please choose vim or nano as the autoremove-torrents configration editor" ; exit 1 ; }
+
+################################################################################################ Main Function
+
+function alias_art() {
+
+    echo >> $OutputLOG
+
+    ln -s $(which autoremove-torrents) /usr/local/bin/art >> "$OutputLOG" 2>&1
+
+    cat << 'EOF' > /tmp/art-execute
 $(which autoremove-torrents) -c $HOME/.config/autoremove-torrents/config.yml -l $HOME/.config/autoremove-torrents/logs
 EOF
-chmod +x /usr/local/bin/art-execute
+    cp -f /tmp/art-execute /usr/local/bin/art-execute >> "$OutputLOG" 2>&1
+    chmod +x /usr/local/bin/art-execute >> "$OutputLOG" 2>&1
 
-cat << 'EOF' > /usr/local/bin/art-configure
+    cat << 'EOF' > /tmp/art-configure
 [[ $HOME != "/root" ]] && pm="sudo apt" || pm="apt"
-[ -z $(which nano) ] && $pm update && $pm -y install nano
+[ -z $(which editor) ] && $pm update && $pm -y install editor
 [ $? = 1 ] && exit 1
-$(which nano) $HOME/.config/autoremove-torrents/config.yml
+$(which editor) $HOME/.config/autoremove-torrents/config.yml
 EOF
-chmod +x /usr/local/bin/art-configure
+    sed -i "s|editor|$editor|g" /tmp/art-configure >> "$OutputLOG" 2>&1
+    cp -f /tmp/art-configure /usr/local/bin/art-configure >> "$OutputLOG" 2>&1
+    chmod +x /usr/local/bin/art-configure >> "$OutputLOG" 2>&1
+
+    echo >> $OutputLOG
+
+}
+
+[ -z $(which autoremove-torrents) ] && { echo -e "ERROR: AutoRemove-Torrents is NOT installed" ; exit 1 ; }
+
+echo_task "Setting $AppName alias ..."
+alias_art & spinner $!
+status_done
