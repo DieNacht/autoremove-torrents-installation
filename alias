@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# https://github.com/DieNacht/autoremove-torrents-installation
+# Author: DieNacht
+#
+# Thanks to amefs and Aniverse
+
+ln -s $(which autoremove-torrents) /usr/local/bin/art
+
+cat << 'EOF' > /usr/local/bin/art-execute
+$(which autoremove-torrents) -c $HOME/.config/autoremove-torrents/config.yml -l $HOME/.config/autoremove-torrents/logs
+EOF
+chmod +x /usr/local/bin/art-execute
+
+cat << 'EOF' > /usr/local/bin/art-configure
+$(which nano) $HOME/.config/autoremove-torrents/config.yml || apt update && apt -y install nano && $(which nano) $HOME/.config/autoremove-torrents/config.yml
+EOF
+chmod +x /usr/local/bin/art-configure
