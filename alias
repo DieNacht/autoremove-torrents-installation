@@ -80,7 +80,8 @@ EOF
 
 }
 
-if [ -n $(which autoremove-torrents) ] & version_ge $($(which autoremove-torrents) -v -l /tmp 2>&1 | head -1 | grep -oP "[0-9.]+" | tail -1) 1.5.2 ; then
+if [[ ! $(which autoremove-torrents) == "" ]] && version_ge $($(which autoremove-torrents) -v -l /tmp 2>&1 | head -1 | grep -oP "[0-9.]+" | tail -1) 1.5.2 ; then
+
     echo_task "Setting $AppName Alias ..."
     alias_art & spinner $!
     status_done
