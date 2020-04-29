@@ -1,6 +1,7 @@
 # autoremove-torrents-installation
 
-脚本支持的系统版本： `Ubuntu 16.04 / 18.04`、`Debian 8 / 9 / 10` 
+## 目前支持的系统版本
+`Ubuntu 16.04 / 18.04`、`Debian 8 / 9 / 10` 
 
 ## Install
 
