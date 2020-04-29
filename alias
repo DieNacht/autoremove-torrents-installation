@@ -13,7 +13,9 @@ EOF
 chmod +x /usr/local/bin/art-execute
 
 cat << 'EOF' > /usr/local/bin/art-configure
-[ -z $(which nano) ] && apt update && apt -y install nano
+[[ $HOME != "/root" ]] && pm="sudo apt" || pm="apt"
+[ -z $(which nano) ] && $pm update && $pm -y install nano
+[ $? = 1 ] && exit 1
 $(which nano) $HOME/.config/autoremove-torrents/config.yml
 EOF
 chmod +x /usr/local/bin/art-configure
