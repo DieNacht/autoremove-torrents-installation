@@ -5,6 +5,11 @@
 #
 # Thanks to amefs and Aniverse
 
+AppName="AutoRemove-Torrents"
+AppNameLower="autoremove-torrents"
+Need_SourceCode=no
+pm_action=install
+
 function show_usage() { echo "
 $AppName $pm_action $script_version ($script_update)
 Usage:
