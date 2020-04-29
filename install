@@ -49,7 +49,7 @@ function install_art() {
     echo "status_lock=$status_lock" > /tmp/Variables
     rm -f /tmp/$status_lock.1.lock /tmp/$status_lock.2.lock 
     # if [[ -n $(which autoremove-torrents) ]]; then
-    if [ -n $(which autoremove-torrents) ] && version_ge $($(which autoremove-torrents) -v -l /tmp 2>&1 | head -1 | grep -oP "[0-9.]+" | tail -1) 1.5.2 ; then
+    if [ -n $(which autoremove-torrents) ] & version_ge $($(which autoremove-torrents) -v -l /tmp 2>&1 | head -1 | grep -oP "[0-9.]+" | tail -1) 1.5.2 ; then
         touch /tmp/$status_lock.1.lock
     else
         touch /tmp/$status_lock.2.lock
