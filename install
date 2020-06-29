@@ -24,26 +24,26 @@ check_var_OutputLOG
 debug_log_location
 cat_outputlog
 
+function install_python37() {
+    pyenv_install_python 3.7.8
+    pyenv_init_venv      3.7.8   /opt/pyenv/flexget
+    python_getpip        3.7.8   /opt/pyenv/flexget
+    pip_cmd="/opt/pyenv/flexget/bin/pip"
+    python_cmd="/opt/pyenv/flexget/bin/python"
+}
+
 function install_art() {
 
     echo >> $OutputLOG
 
-    if [[ "$CODENAME" == xenial ]]; then
-        apt_install_check    python3.6-dev gcc
-        apt_install_separate
-    elif [[ "$CODENAME" =~ (bionic|buster) ]]; then
-        apt_install_check    python3-psutil
-        apt_install_separate
-    fi
+    $pip_cmd install --upgrade setuptools                           >> "$OutputLOG" 2>&1
+    $pip_cmd install --upgrade pyopenssl                            >> "$OutputLOG" 2>&1
+    $pip_cmd install --upgrade cryptography                         >> "$OutputLOG" 2>&1
+    $pip_cmd install autoremove-torrents                            >> "$OutputLOG" 2>&1
 
-    wget -nv -O get-pip.py https://bootstrap.pypa.io/get-pip.py >> "$OutputLOG" 2>&1
-    python3 get-pip.py --force-reinstall                        >> "$OutputLOG" 2>&1
-    pip3 install --upgrade pip                                  >> "$OutputLOG" 2>&1
-    pip3 install setuptools==45.3.0                             >> "$OutputLOG" 2>&1
-
-    pip3 install --upgrade pyopenssl                            >> "$OutputLOG" 2>&1
-    pip3 install --upgrade cryptography                         >> "$OutputLOG" 2>&1
-    pip3 install autoremove-torrents                            >> "$OutputLOG" 2>&1
+    rm -f /usr/local/bin/autoremove-torrents                        >> "$OutputLOG" 2>&1
+    ln -s /opt/pyenv/flexget/bin/autoremove-torrents\
+    /usr/local/bin/autoremove-torrents                              >> "$OutputLOG" 2>&1
 
     status_lock=$AppNameLower
     echo "status_lock=$status_lock" > /tmp/Variables
@@ -59,9 +59,11 @@ function install_art() {
 
 }
 
-if [[ ! -f $LOCKLocation/python3.lock ]]; then
-    bash <(wget -qO- https://github.com/Aniverse/inexistence/raw/master/00.Installation/package/python) --tmp
+if [[ ! -f $LOCKLocation/pyenv.lock ]]; then
+    bash <(wget -qO- https://github.com/Aniverse/inexistence/raw/master/00.Installation/package/pyenv)
 fi
+
+install_python37
 
 echo_task "Installing $AppName ..."
 install_art & spinner $!
