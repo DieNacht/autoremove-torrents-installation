@@ -26,10 +26,10 @@ cat_outputlog
 
 function install_python37() {
     pyenv_install_python 3.7.8
-    pyenv_init_venv      3.7.8   /opt/pyenv/flexget
-    python_getpip        3.7.8   /opt/pyenv/flexget
-    pip_cmd="/opt/pyenv/flexget/bin/pip"
-    python_cmd="/opt/pyenv/flexget/bin/python"
+    pyenv_init_venv      3.7.8   /opt/venv/flexget
+    python_getpip        3.7.8   /opt/venv/flexget
+    pip_cmd="/opt/venv/flexget/bin/pip"
+    python_cmd="/opt/venv/flexget/bin/python"
 }
 
 function install_art() {
