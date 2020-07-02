@@ -42,7 +42,7 @@ function install_art() {
     $pip_cmd install autoremove-torrents                            >> "$OutputLOG" 2>&1
 
     rm -f /usr/local/bin/autoremove-torrents                        >> "$OutputLOG" 2>&1
-    ln -s /opt/pyenv/flexget/bin/autoremove-torrents\
+    ln -s /opt/venv/flexget/bin/autoremove-torrents\
     /usr/local/bin/autoremove-torrents                              >> "$OutputLOG" 2>&1
 
     status_lock=$AppNameLower
