@@ -64,8 +64,8 @@ EOF
     chmod +x /usr/local/bin/art-execute >> "$OutputLOG" 2>&1
 
     cat << 'EOF' > /tmp/art-configure
-[[ $HOME != "/root" ]] && pm="sudo apt" || pm="apt"
-[ -z $(which editor) ] && $pm update && $pm -y install editor
+# [[ $HOME != "/root" ]] && pm="sudo apt" || pm="apt"
+# [ -z $(which editor) ] && $pm update && $pm -y install editor
 [ $? = 1 ] && exit 1
 $(which editor) $HOME/.config/autoremove-torrents/config.yml
 EOF
